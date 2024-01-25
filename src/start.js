@@ -12,6 +12,15 @@ var config = {
       debug: true, // set to true to view zones
     },
   },
-  scene: [firstScene, BootScene, WorldScene, BattleScene, UIScene],
+  scene: [
+    firstScene,
+    BootScene,
+    WorldScene,
+    BattleScene,
+    BattleCreep,
+    UIScene,
+    UIScene2,
+    lastScene,
+  ],
 };
 var game = new Phaser.Game(config);

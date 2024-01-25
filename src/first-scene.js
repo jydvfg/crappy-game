@@ -3,11 +3,7 @@ const firstScene = new Phaser.Scene("First");
 
 // load assets:
 firstScene.preload = function () {
-  this.load.image(
-    "background",
-    "/assets/images/monster-tamer/map/level_background.png"
-  );
-  this.load.tilemapTiledJSON("level", "/assets/data/level.json");
+  this.load.image("background", "/assets/My map/DemoLower.png");
   this.load.image(
     "collision",
     "/assets/images/monster-tamer/map/collision.png"
@@ -16,35 +12,35 @@ firstScene.preload = function () {
     "foreground",
     "/assets/images/monster-tamer/map/level_foreground.png"
   );
-  this.load.spritesheet("player", "/assets/idle viking mini -Sheet.png", {
-    frameWidth: 32,
-    frameHeight: 32,
-  });
-  this.load.spritesheet("enemy", "/assets/Woodcutter_idle.png", {
+  this.load.spritesheet(
+    "player",
+    "/assets/character/Adventure_Character_Simple.png",
+    {
+      frameWidth: 48,
+      frameHeight: 48,
+    }
+  );
+  this.load.spritesheet("enemy", "/assets/character/Character2.png", {
     frameWidth: 48,
-    frameHeight: 48,
+    frameHeight: 30,
   });
 };
 
 firstScene.create = function () {
-  const bg = this.add.sprite(0, 0, "background");
-  const fg = this.add.sprite(0, 0, "foreground").setDepth(3);
-  const level = this.make.tilemap({ key: "level" });
-  const collisionLayer = level.createLayer("Collision", "", 0, 0);
-  const collisionTiles = level.addTilesetImage("Collision", "level");
+  const bg = this.add.sprite(0, 0, "background").setOrigin(0).setScale(2);
   this.player = this.physics.add
-    .sprite(100, 300, "player")
-    .setScale(2)
+    .sprite(100, 175, "player")
+    .setScale(1)
     .setDepth(1);
   this.enemy = this.physics.add
-    .sprite(200, 300, "enemy")
-    .setScale(9)
+    .sprite(200, 175, "enemy")
+    .setScale(4)
     .setDepth(1);
 
   this.anims.create({
     key: "player_idle",
     frames: this.anims.generateFrameNumbers("player"),
-    frameRate: 20,
+    frameRate: 15,
     repeat: -1,
   });
   this.anims.create({

@@ -6,8 +6,19 @@ var BootScene = new Phaser.Class({
   preload: function () {
     this.load.image("tiles", "/assets/My map/0x72_16x16DungeonTileset.v5.png");
     this.load.tilemapTiledJSON("map", "/assets/My map/dungeon.json");
-    this.load.image("dragonblue", "/assets/dragonblue.png");
-    this.load.spritesheet("player", "/assets/idle viking mini -Sheet.png", {
+    this.load.spritesheet("zombie", "/assets/character/Zombie.png", {
+      frameWidth: 48,
+      frameHeight: 30,
+    });
+    this.load.spritesheet(
+      "player",
+      "/assets/character/Adventure_Character_Simple.png",
+      {
+        frameWidth: 48,
+        frameHeight: 48,
+      }
+    );
+    this.load.spritesheet("creep", "/assets/character/Idle (32x32).png", {
       frameWidth: 32,
       frameHeight: 32,
     });
@@ -49,21 +60,58 @@ var WorldScene = new Phaser.Class({
     this.cameras.main.roundPixels = true;
     this.physics.add.collider(this.player, walls);
 
-    // set random encounters
-    this.spawns = this.physics.add.group({
-      classType: Phaser.GameObjects.Zone,
+    this.zombieZone = this.physics.add
+      .sprite(165, 200, "zombie")
+      .setScale(1)
+      .setDepth(1);
+    this.creepZone = this.physics.add
+      .sprite(500, 200, "creep")
+      .setScale(1)
+      .setDepth(1);
+
+    this.anims.create({
+      key: "zombie_idle",
+      frames: this.anims.generateFrameNumbers("zombie"),
+      frameRate: 20,
+      repeat: -1,
     });
-    for (var i = 0; i < 30; i++) {
-      var x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
-      var y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
-      // parameters are x, y, width, height
-      this.spawns.create(x, y, 20, 20);
-    }
+    this.anims.create({
+      key: "creep_idle",
+      frames: this.anims.generateFrameNumbers("creep"),
+      frameRate: 20,
+      repeat: -1,
+    });
+    this.zombieZone.play("zombie_idle");
+    this.creepZone.play("creep_idle");
+    // Set keys for identification
+    this.zombieZone.key = "zombieZone";
+    this.creepZone.key = "creepZone";
     this.physics.add.overlap(
       this.player,
-      this.spawns,
-      this.onMeetEnemy,
+      this.zombieZone,
+      this.onMeetZombie,
       false,
+      this
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.creepZone,
+      this.onMeetCreep,
+      false,
+      this
+    );
+    this.exit = this.physics.add.group({
+      classType: Phaser.GameObjects.Zone,
+    });
+    this.exit.create(500, 350, 30, 30);
+    this.physics.world.enable(this.exit);
+
+    // Optionally, add an event listener for when the player overlaps with the zone
+    this.physics.add.overlap(
+      this.player,
+      this.exit,
+      this.onExitOverlap,
+      null,
       this
     );
   },
@@ -84,12 +132,23 @@ var WorldScene = new Phaser.Class({
       this.player.body.setVelocityY(80);
     }
   },
-  onMeetEnemy: function (player, zone) {
+  onMeetZombie: function (player, zone) {
     zone.x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
     zone.y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
     this.cameras.main.shake(300);
     this.cameras.main.flash(300);
 
     this.scene.switch("BattleScene");
+  },
+  onMeetCreep: function (player, zone) {
+    zone.x = Phaser.Math.RND.between(0, this.physics.world.bounds.width);
+    zone.y = Phaser.Math.RND.between(0, this.physics.world.bounds.height);
+    this.cameras.main.shake(300);
+    this.cameras.main.flash(300);
+
+    this.scene.switch("BattleCreep");
+  },
+  onExitOverlap() {
+    this.scene.switch("Last");
   },
 });

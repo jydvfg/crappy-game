@@ -1,5 +1,5 @@
 // units objects
-var Units = new Phaser.Class({
+var Unit = new Phaser.Class({
   Extends: Phaser.GameObjects.Sprite,
   initialize: function Unit(scene, x, y, texture, frame, type, hp, damage) {
     Phaser.GameObjects.Sprite.call(this, scene, x, y, texture, frame);
@@ -192,12 +192,11 @@ var EnemiesMenu = new Phaser.Class({
   },
 });
 
-// init scenes
-var BattleScene = new Phaser.Class({
+var BattleCreep = new Phaser.Class({
   Extends: Phaser.Scene,
-  initialize: function BattleScene() {
-    Phaser.Scene.call(this, { key: "BattleScene" });
-    this.sceneKey = "BattleScene";
+  initialize: function BattleCreep() {
+    Phaser.Scene.call(this, { key: "BattleCreep" });
+    this.sceneKey = "BattleCreep";
   },
   create: function () {
     this.cameras.main.setBackgroundColor("rgba(0, 200, 0, 0.5)");
@@ -228,32 +227,35 @@ var BattleScene = new Phaser.Class({
 
     dev.play("player_idle");
 
-    var zombie = new Enemy(this, 225, 75, "zombie", null, "U8 weirdo", 50, 10);
-    zombie.createHpText(this);
-    zombie.hpText.x = 230;
-    zombie.hpText.y = 125;
-    zombie.hpText.setDepth(1);
+    var creep = new Enemy(this, 225, 75, "creep", null, "U8 creep", 50, 10);
+    creep.createHpText(this);
+    creep.hpText.x = 230;
+    creep.hpText.y = 125;
+    creep.hpText.setDepth(1);
+
     this.anims.create({
-      key: "zombie_idle",
-      frames: this.anims.generateFrameNumbers("zombie"),
+      key: "creep_idle",
+      frames: this.anims.generateFrameNumbers("creep"),
       frameRate: 20,
       repeat: -1,
     });
-    this.add.existing(zombie);
-    zombie.play("zombie_idle");
+
+    this.add.existing(creep);
+    creep.play("creep_idle");
 
     this.heroes = [dev];
-    this.enemies = [zombie];
+    this.enemies = [creep];
     this.units = this.heroes.concat(this.enemies);
-    this.scene.launch("UIScene");
 
-    this.events.emit("battleSceneStart");
+    this.scene.launch("UIScene2");
+
+    this.events.emit("battleCreepStart");
     this.input.keyboard.on("keydown-ESC", this.endBattle, this);
     this.sys.events.on("wake", this.wake, this);
     this.index = -1;
   },
   wake: function () {
-    this.scene.run("UIScene");
+    this.scene.run("UIScene2");
     this.time.addEvent({
       delay: 2000,
       callback: this.exitBattle,
@@ -285,7 +287,7 @@ var BattleScene = new Phaser.Class({
     });
   },
   nextTurn: function () {
-    if (this.checkEndBattle()) {
+    if (this.checkEndBattle2()) {
       this.endBattle();
       return;
     }
@@ -344,24 +346,19 @@ var BattleScene = new Phaser.Class({
       }
     }
   },
-  checkEndBattle: function () {
+  checkEndBattle2: function () {
     let heroes, enemies;
 
-    if (this.sceneKey === "BattleScene") {
-      heroes = this.heroes;
-      enemies = this.enemies;
-    } else if (this.sceneKey === "BattleCreep") {
-      heroes = this.enemies;
-      enemies = this.heroes;
-    }
+    heroes = this.enemies;
+    enemies = this.heroes;
 
-    let victory = enemies.every((enemy) => !enemy.living);
-    let gameOver = heroes.every((hero) => !hero.living);
+    let victory = enemies && enemies.every((enemy) => !enemy.living);
+    let gameOver = heroes && heroes.every((hero) => !hero.living);
 
     return victory || gameOver;
   },
   endBattle: function () {
-    this.scene.sleep("UIScene");
+    this.scene.sleep("UIScene2");
 
     this.time.addEvent({
       delay: 2000,
@@ -374,10 +371,10 @@ var BattleScene = new Phaser.Class({
   },
 });
 
-var UIScene = new Phaser.Class({
+var UIScene2 = new Phaser.Class({
   Extends: Phaser.Scene,
-  initialize: function UIScene() {
-    Phaser.Scene.call(this, { key: "UIScene" });
+  initialize: function UIScene2() {
+    Phaser.Scene.call(this, { key: "UIScene2" });
   },
   init: function () {
     this.game.events.on("battleSceneStart", this.handleBattleSceneStart, this);
@@ -395,7 +392,7 @@ var UIScene = new Phaser.Class({
     }
   },
   handleBattleSceneStart: function () {
-    this.battleScene = this.scene.get("BattleScene");
+    this.battleScene = this.scene.get("BattleCreep");
 
     if (this.battleScene) {
       this.remapHeroes();
@@ -442,7 +439,7 @@ var UIScene = new Phaser.Class({
     this.menus.add(this.actionsMenu);
     this.menus.add(this.enemiesMenu);
 
-    this.battleScene = this.scene.get("BattleScene");
+    this.battleScene = this.scene.get("BattleCreep");
     if (this.battleScene) {
       this.remapHeroes();
       this.remapEnemies();
