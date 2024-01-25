@@ -5,7 +5,7 @@ var Units = new Phaser.Class({
     Phaser.GameObjects.Sprite.call(this, scene, x, y, texture, frame);
     this.type = type;
     this.maxHp = this.hp = hp;
-    this.damage = damage; // default damage
+    this.damage = damage;
     this.hpText = null;
     this.living = true;
     this.menuItem = null;
@@ -14,12 +14,10 @@ var Units = new Phaser.Class({
     this.menuItem = item;
   },
   createHpText(scene) {
-    // Create and add the text object to the scene
     this.hpText = new MenuItem(0, 0, this.getCurrentHP(), scene);
     scene.add.existing(this.hpText);
   },
   updateHpText() {
-    // Update the text object with the current HP
     if (this.hpText) {
       this.hpText.setText(this.getCurrentHP());
     }
@@ -35,7 +33,6 @@ var Units = new Phaser.Class({
     if (this.hp <= 0) {
       this.hp = 0;
 
-      // Check if menuItem is not null before calling unitKilled
       if (this.menuItem) {
         this.menuItem.unitKilled();
       }
@@ -132,14 +129,12 @@ var Menu = new Phaser.Class({
     if (this.menuItemIndex >= this.menuItems.length) this.menuItemIndex = 0;
     this.menuItems[this.menuItemIndex].select();
   },
-  // select the menu as a whole and an element with index from it
   select: function (index) {
     if (!index) index = 0;
     this.menuItems[this.menuItemIndex].deselect();
     this.menuItemIndex = index;
     this.menuItems[this.menuItemIndex].select();
   },
-  // deselect this menu
   deselect: function () {
     this.menuItems[this.menuItemIndex].deselect();
     this.menuItemIndex = 0;
@@ -214,8 +209,8 @@ var BattleScene = new Phaser.Class({
       "player",
       1,
       "Developer",
-      100,
-      20
+      50,
+      15
     );
     dev.createHpText(this);
     dev.hpText.x = 30;
@@ -240,7 +235,7 @@ var BattleScene = new Phaser.Class({
       null,
       "Dragon",
       50,
-      3
+      10
     );
     dragonblue.createHpText(this);
     dragonblue.hpText.x = 230;
@@ -251,10 +246,8 @@ var BattleScene = new Phaser.Class({
 
     this.heroes = [dev];
     this.enemies = [dragonblue];
-    // array with both parties, who will attack
     this.units = this.heroes.concat(this.enemies);
 
-    // Run UI Scene at the same time
     this.scene.launch("UIScene");
 
     this.events.emit("battleSceneStart");
@@ -279,14 +272,17 @@ var BattleScene = new Phaser.Class({
     if (action == "attack") {
       var player = this.units[this.index];
       var enemy = this.enemies[target];
-      var damage = player.damage;
+      var newDamage = Math.floor(Math.random() * (15 - 10 + 1)) + 10;
 
-      // Apply the damage to the enemy
-      enemy.takeDamage(damage);
+      enemy.takeDamage(newDamage);
 
-      // Display a message about the player's attack
       var message =
-        player.type + " attacks " + enemy.type + " for " + damage + " damage!";
+        player.type +
+        " attacks " +
+        enemy.type +
+        " for " +
+        newDamage +
+        " damage!";
       this.events.emit("Message", message);
     }
 
@@ -314,23 +310,23 @@ var BattleScene = new Phaser.Class({
         var enemy = this.units[this.index];
         var player = this.heroes[0];
         var damage = enemy.damage;
+        var ogDamage = enemy.damage;
 
-        // Apply the damage to the player
-        player.takeDamage(damage);
+        var newDmg = Math.floor(Math.random() * ogDamage + 5);
+        player.takeDamage(newDmg);
 
-        // Display a message about the enemy's attack
         var message =
           enemy.type +
           " attacks " +
           player.type +
           " for " +
-          damage +
+          newDmg +
           " damage!";
+        this.events.emit("Message", message);
         this.events.emit("Message", message);
         this.events.emit("UpdateHP", player.getCurrentHP());
 
         if (player.getCurrentHP() <= 0) {
-          // Player is defeated, game over
           var gameOverMessage = "Game Over!";
           this.events.emit("Message", gameOverMessage);
           this.endBattle();
@@ -338,7 +334,6 @@ var BattleScene = new Phaser.Class({
         }
 
         if (enemy.getCurrentHP() <= 0) {
-          // Enemy is defeated, exit and reset combat scene
           this.events.emit("Message", enemy.type + " defeated!");
           this.time.addEvent({
             delay: 3000,
@@ -363,7 +358,6 @@ var BattleScene = new Phaser.Class({
       if (this.enemies[i].living) victory = false;
     }
     let gameOver = true;
-    // if all heroes are dead we have game over
     for (let i = 0; i < this.heroes.length; i++) {
       if (this.heroes[i].living) gameOver = false;
     }
@@ -373,13 +367,19 @@ var BattleScene = new Phaser.Class({
     this.heroes.length = 0;
     this.enemies.length = 0;
     for (let i = 0; i < this.units.length; i++) {
-      // link item
       this.units[i].destroy();
     }
     this.units.length = 0;
-    // sleep the UI
+    this.index = -1;
     this.scene.sleep("UIScene");
-    this.scene.switch("WorldScene");
+
+    this.time.addEvent({
+      delay: 2000,
+      callback: function () {
+        this.scene.switch("WorldScene");
+      },
+      callbackScope: this,
+    });
   },
 });
 

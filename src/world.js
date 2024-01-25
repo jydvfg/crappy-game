@@ -4,8 +4,8 @@ var BootScene = new Phaser.Class({
     Phaser.Scene.call(this, { key: "BootScene" });
   },
   preload: function () {
-    this.load.image("tiles", "/assets/map/spritesheet.png");
-    this.load.tilemapTiledJSON("map", "/assets/map/map.json");
+    this.load.image("tiles", "/assets/My map/0x72_16x16DungeonTileset.v5.png");
+    this.load.tilemapTiledJSON("map", "/assets/My map/dungeon.json");
     this.load.image("dragonblue", "/assets/dragonblue.png");
     this.load.spritesheet("player", "/assets/idle viking mini -Sheet.png", {
       frameWidth: 32,
@@ -26,11 +26,11 @@ var WorldScene = new Phaser.Class({
   create: function (data) {
     var map = this.make.tilemap({ key: "map" });
     // Access the map property directly
-    var tiles = map.addTilesetImage("spritesheet", "tiles");
+    var tiles = map.addTilesetImage("dungeon", "tiles");
 
-    var grass = map.createLayer("Grass", tiles, 0, 0);
-    var obstacles = map.createLayer("Obstacles", tiles, 0, 0);
-    obstacles.setCollisionByExclusion([-1]);
+    var grass = map.createLayer("ground", tiles, 0, 0);
+    var walls = map.createLayer("walls", tiles, 0, 0);
+    walls.setCollisionByExclusion([-1]);
     this.anims.create({
       key: "player_idle",
       frames: this.anims.generateFrameNumbers("player"),
@@ -38,7 +38,7 @@ var WorldScene = new Phaser.Class({
       repeat: -1,
     });
 
-    this.player = this.physics.add.sprite(50, 100, "player", 0);
+    this.player = this.physics.add.sprite(100, 100, "player", 0);
     this.player.play("player_idle");
     this.physics.world.bounds.width = map.widthInPixels;
     this.physics.world.bounds.height = map.heightInPixels;
@@ -47,7 +47,7 @@ var WorldScene = new Phaser.Class({
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(this.player);
     this.cameras.main.roundPixels = true;
-    this.physics.add.collider(this.player, obstacles);
+    this.physics.add.collider(this.player, walls);
 
     // set random encounters
     this.spawns = this.physics.add.group({
