@@ -312,7 +312,7 @@ var BattleScene = new Phaser.Class({
         this.events.emit("PlayerSelect", this.index);
       } else {
         var enemy = this.units[this.index];
-        var player = this.heroes[0]; // Assuming there's only one player
+        var player = this.heroes[0];
         var damage = enemy.damage;
 
         // Apply the damage to the player
@@ -345,8 +345,7 @@ var BattleScene = new Phaser.Class({
             callback: this.endBattle,
             callbackScope: this,
           });
-          this.registry.destroy(); // destroy registry
-          this.events.off(); // disable all active events
+
           this.endBattle();
           return;
         }
@@ -380,7 +379,6 @@ var BattleScene = new Phaser.Class({
     this.units.length = 0;
     // sleep the UI
     this.scene.sleep("UIScene");
-    // return to WorldScene and sleep current BattleScene
     this.scene.switch("WorldScene");
   },
 });
@@ -482,7 +480,6 @@ var UIScene = new Phaser.Class({
       }
     }
   },
-  update() {},
 });
 
 var Message = new Phaser.Class({
