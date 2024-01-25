@@ -1,7 +1,7 @@
 // create a new scene
 const firstScene = new Phaser.Scene("First");
 
-// load assets
+// load assets:
 firstScene.preload = function () {
   this.load.image(
     "background",
