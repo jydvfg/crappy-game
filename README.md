@@ -47,4 +47,4 @@ Feel free to use this project for whatever you want, especially as a learning re
 
 ## License
 
-This project is open-source and available under an [MIT License](LICENSE).
+This project is open-source and available under an idk license
